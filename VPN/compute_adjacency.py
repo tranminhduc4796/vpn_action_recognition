@@ -25,6 +25,25 @@ def compute_adjacency(dataset_name, alpha, beta):
     return adj
 
 
+def compute_open_pose_adjacency(dataset_name, alpha, beta):
+    adj = np.zeros([14, 14])
+    if dataset_name == 'NTU':
+        intrinsic_connections = ((0, 13), (1, 13), (2, 1), (3, 2), (4, 13), (5, 4), (6, 5), (7, 13),
+                                 (8, 7), (9, 8), (10, 13), (11, 10), (12, 11))
+        extrinsic_connections = [[3, 9], [6, 12], [2, 8], [5, 11], [1, 7], [4, 10]]
+        for connection in intrinsic_connections:
+            adj[connection[0]][connection[1]] = alpha
+            adj[connection[1]][connection[0]] = alpha
+
+        for connection in extrinsic_connections:
+            adj[connection[0]][connection[1]] = beta
+            adj[connection[1]][connection[0]] = beta
+
+        for connection in range(0, 14):
+            adj[connection][connection] = 0
+    return adj
+
+
 def compute_adjacency_two_person(dataset_name, alpha, beta):
     if dataset_name == 'NTU':
         # adj = np.ones([25, 25])

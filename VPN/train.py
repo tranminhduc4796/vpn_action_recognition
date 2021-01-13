@@ -34,7 +34,11 @@ class CustomModelCheckpoint(Callback):
 
 
 def get_adjacency_mat_for_pose(args):
-    a_mat = compute_adjacency(args.dataset, args.alpha, args.beta)
+    if args.num_nodes == 14:
+        a_mat = compute_open_pose_adjacency(args.dataset, args.alpha, args.beta)
+    else:
+        a_mat = compute_adjacency(args.dataset, args.alpha, args.beta)
+
     a_mat = np.repeat(a_mat, args.batch_size, axis=0)
     a_mat = np.reshape(a_mat, [args.batch_size, a_mat.shape[1], a_mat.shape[1]])
     graph_conv_filters = preprocess_adj_tensor_with_identity(a_mat, args.sym_norm)
@@ -67,9 +71,11 @@ def trainer(args):
 
     # define data generators
     train_generator = DataGenerator(args.paths, graph_conv_filters, args.timesteps, args.train_ds_name,
-                                    args.num_classes, args.stack_size, batch_size=args.batch_size)
+                                    args.num_classes, args.stack_size, batch_size=args.batch_size,
+                                    num_features=args.num_features, num_nodes=args.num_nodes)
     val_generator = DataGenerator(args.paths, graph_conv_filters, args.timesteps, args.test_ds_name, args.num_classes,
-                                  args.stack_size, batch_size=args.batch_size)
+                                  args.stack_size, batch_size=args.batch_size,
+                                  num_features=args.num_features, num_nodes=args.num_nodes)
     # model loggers
     csv_logger = CSVLogger('_'.join([args.model_name, args.dataset, '.csv']))
     reduce_lr = ReduceLROnPlateau(monitor=args.monitor, factor=args.factor, patience=args.patience)

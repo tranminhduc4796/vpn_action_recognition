@@ -1,7 +1,6 @@
 import os
 
 from keras import regularizers
-from keras.optimizers import SGD
 from i3d_inception import Inception_Inflated3d, conv3d_bn
 from keras.layers import Dense, Flatten, Dropout, Reshape, Input, RepeatVector, Permute
 from keras.layers import AveragePooling3D, Lambda
@@ -60,7 +59,7 @@ class i3d_modified:
 
 
 def GCNN_skeleton_t16(num_nodes, num_features, graph_conv_filters_shape1, graph_conv_filters_shape2, num_filters,
-                      num_classes, n_neuron, n_dropout, timesteps):
+                      n_neuron, n_dropout, timesteps):
     print('Build GCNN')
     X_input_t1 = Input(shape=(num_nodes, num_features))
     X_input_t2 = Input(shape=(num_nodes, num_features))
@@ -79,7 +78,7 @@ def GCNN_skeleton_t16(num_nodes, num_features, graph_conv_filters_shape1, graph_
     X_input_t15 = Input(shape=(num_nodes, num_features))
     X_input_t16 = Input(shape=(num_nodes, num_features))
 
-    X_input = Input(shape=(timesteps, num_nodes, 3))
+    X_input = Input(shape=(timesteps, num_nodes, num_features))
 
     graph_conv_filters_input = Input(shape=(graph_conv_filters_shape1, graph_conv_filters_shape2))
 
@@ -206,7 +205,7 @@ def embed_model_spatio_temporal_gcnn(n_neuron, timesteps, num_nodes, num_feature
     print('Build model...')
     model_inputs = []
     model_gcnn = GCNN_skeleton_t16(num_nodes, num_features, graph_conv_filters_shape1,
-                                   graph_conv_filters_shape2, num_filters, num_classes,
+                                   graph_conv_filters_shape2, num_filters,
                                    n_neuron, n_dropout, timesteps)
 
     z1 = Dense(256, activation='tanh', name='z1_layer', trainable=True)(model_gcnn.get_layer('gcnn_out').output)

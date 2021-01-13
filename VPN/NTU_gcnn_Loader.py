@@ -15,7 +15,8 @@ np.random.seed(seed)
 
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, paths, graph_conv_filters, timesteps, mode, num_classes, stack_size, batch_size=32):
+    def __init__(self, paths, graph_conv_filters, timesteps, mode, num_classes, stack_size, batch_size=32,
+                 num_features=3, num_nodes=25):
         self.batch_size = batch_size
         self.path_skeleton = paths['skeleton']
         self.path_cnn = paths['cnn']
@@ -25,8 +26,10 @@ class DataGenerator(keras.utils.Sequence):
         self.stack_size = stack_size
         self.stride = 2
         self.step = timesteps
-        self.dim = 150  # for two skeletons in a single frame
+        self.dim = num_features * num_nodes * 2   # for two skeletons in a single frame
         self.mode = mode
+        self.num_features = num_features
+        self.num_nodes = num_nodes
         self.label_enc = self.get_label_enc()
         self.on_epoch_end()
 
@@ -70,9 +73,13 @@ class DataGenerator(keras.utils.Sequence):
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
             unpadded_file = np.load(self.path_skeleton + ID + '.npy')
-            origin = unpadded_file[0, 3:6]
             [row, _] = unpadded_file.shape
-            origin = np.tile(origin, (row, 50))
+            if self.num_features == 3 and self.num_nodes == 25:
+                origin = unpadded_file[0, 3:6]
+                origin = np.tile(origin, (row, 50))
+            elif self.num_features == 2 and self.num_nodes == 14:
+                origin = unpadded_file[0, -2:]
+                origin = np.tile(origin, (row, 28))
             unpadded_file -= origin
             extra_frames = (len(unpadded_file) % self.step)
             if extra_frames < (self.step / 2):
@@ -92,8 +99,8 @@ class DataGenerator(keras.utils.Sequence):
             sampled_file = np.asarray(sampled_file)
             X[i,] = np.squeeze(sampled_file)
 
-        X = X[:, :, 0:75]
-        X = np.reshape(X, [self.batch_size, self.step, 25, 3])
+        X = X[:, :, 0:self.num_nodes * self.num_features]
+        X = np.reshape(X, [self.batch_size, self.step, self.num_nodes, self.num_features])
 
         return X
 
