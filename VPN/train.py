@@ -85,7 +85,7 @@ def trainer(args):
     # model_checkpoint = CustomModelCheckpoint(model, os.path.join(args.weights_loc + args.model_name, 'epoch_'))
     model_checkpoint = ModelCheckpoint(filepath=os.path.join(args.weights_loc, args.model_name + '.hdf5'),
                                        save_best_only=True,
-                                       monitor='val_accuracy',
+                                       monitor='val_action_output_accuracy',
                                        mode='max')
 
     print(f'Training for {args.dataset} dataset starts!')
