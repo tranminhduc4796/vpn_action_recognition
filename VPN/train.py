@@ -83,8 +83,7 @@ def trainer(args):
     # create folder to save model checkpoints if not already exists
     Path(os.path.join(args.weights_loc + args.model_name)).mkdir(parents=True, exist_ok=True)
     # model_checkpoint = CustomModelCheckpoint(model, os.path.join(args.weights_loc + args.model_name, 'epoch_'))
-    model_checkpoint = ModelCheckpoint(model,
-                                       filepath=os.path.join(args.weights_loc + args.model_name + '.hdf5'),
+    model_checkpoint = ModelCheckpoint(filepath=os.path.join(args.weights_loc, args.model_name + '.hdf5'),
                                        save_best_only=True,
                                        monitor='val_accuracy',
                                        mode='max')
