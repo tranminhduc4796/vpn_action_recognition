@@ -13,7 +13,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Generate split txt for train & test')
 
     parser.add_argument('--video_path', type=str,   help='directory stores videos')
-    parser.add_argument('--skeleton_npy_path', default=250, type=int, help='directory stores skeleton npy')
+    parser.add_argument('--skeleton_npy_path', type=str, help='directory stores skeleton npy')
     parser.add_argument('--out', type=str, default='splits', help='directory stores 2 train.txt & valid.txt')
     return parser.parse_args()
 
