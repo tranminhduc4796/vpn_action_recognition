@@ -5,9 +5,9 @@
 
 from pathlib import Path
 
-from keras.callbacks import ReduceLROnPlateau, CSVLogger, Callback, EarlyStopping
+from keras.callbacks import ReduceLROnPlateau, CSVLogger, Callback, EarlyStopping, ModelCheckpoint
 
-from multiprocessing import cpu_count
+# from multiprocessing import cpu_count
 from NTU_gcnn_Loader import *
 from embedding_gcnn_attention_model import *
 from compute_adjacency import *
@@ -82,7 +82,12 @@ def trainer(args):
     early_stopping = EarlyStopping(min_delta=1e-3, patience=10)
     # create folder to save model checkpoints if not already exists
     Path(os.path.join(args.weights_loc + args.model_name)).mkdir(parents=True, exist_ok=True)
-    model_checkpoint = CustomModelCheckpoint(model, os.path.join(args.weights_loc + args.model_name, 'epoch_'))
+    # model_checkpoint = CustomModelCheckpoint(model, os.path.join(args.weights_loc + args.model_name, 'epoch_'))
+    model_checkpoint = ModelCheckpoint(model,
+                                       filepath=os.path.join(args.weights_loc + args.model_name),
+                                       save_best_only=True,
+                                       monitor='val_accuracy',
+                                       mode='max')
 
     print(f'Training for {args.dataset} dataset starts!')
     model.fit_generator(generator=train_generator,
@@ -90,5 +95,6 @@ def trainer(args):
                         use_multiprocessing=args.multi_proc,
                         epochs=args.epochs,
                         callbacks=[csv_logger, model_checkpoint, reduce_lr, early_stopping],
-                        workers=cpu_count() - 2)
+                        # workers=cpu_count() - 2
+                        )
     print(f'Training for {args.dataset} dataset is complete!')
