@@ -30,7 +30,7 @@ def compute_open_pose_adjacency(dataset_name, alpha, beta):
     if dataset_name == 'NTU':
         intrinsic_connections = ((0, 13), (1, 13), (2, 1), (3, 2), (4, 13), (5, 4), (6, 5), (7, 13),
                                  (8, 7), (9, 8), (10, 13), (11, 10), (12, 11))
-        extrinsic_connections = [[3, 9], [6, 12], [2, 8], [5, 11], [1, 7], [4, 10]]
+        extrinsic_connections = [[6, 12], [5, 11], [4, 10], [3, 9], [2, 8], [1, 7], [2, 11], [5, 8], [3, 12], [6, 9]]
         for connection in intrinsic_connections:
             adj[connection[0]][connection[1]] = alpha
             adj[connection[1]][connection[0]] = alpha
