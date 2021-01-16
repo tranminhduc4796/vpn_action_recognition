@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from keras.callbacks import ReduceLROnPlateau, CSVLogger, Callback, EarlyStopping, ModelCheckpoint
+from keras.callbacks import CSVLogger, Callback, EarlyStopping, ModelCheckpoint
 
 # from multiprocessing import cpu_count
 from NTU_gcnn_Loader import *
@@ -78,12 +78,11 @@ def trainer(args):
                                   num_features=args.num_features, num_nodes=args.num_nodes)
     # model loggers
     csv_logger = CSVLogger('_'.join([args.model_name, args.dataset, '.csv']))
-    reduce_lr = ReduceLROnPlateau(monitor=args.monitor, factor=args.factor, patience=args.patience)
     early_stopping = EarlyStopping(min_delta=1e-3, patience=15)
     # create folder to save model checkpoints if not already exists
     Path(args.weights_loc + '_' + args.model_name).mkdir(parents=True, exist_ok=True)
     # model_checkpoint = CustomModelCheckpoint(model, os.path.join(args.weights_loc + args.model_name, 'epoch_'))
-    model_checkpoint = ModelCheckpoint(filepath=os.path.join(args.weights_loc + '_' + args.model_name, 'best.hdf5'),
+    model_checkpoint = ModelCheckpoint(filepath=args.weights_loc,
                                        save_best_only=True,
                                        monitor='val_action_output_accuracy',
                                        mode='max')
@@ -93,7 +92,7 @@ def trainer(args):
                         validation_data=val_generator,
                         use_multiprocessing=args.multi_proc,
                         epochs=args.epochs,
-                        callbacks=[csv_logger, model_checkpoint, reduce_lr, early_stopping],
+                        callbacks=[csv_logger, model_checkpoint, early_stopping],
                         # workers=cpu_count() - 2
                         )
     print(f'Training for {args.dataset} dataset is complete!')
