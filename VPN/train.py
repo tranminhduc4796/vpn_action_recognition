@@ -65,7 +65,7 @@ def trainer(args):
     loss_weights = {"action_output": args.action_wt, "embed_output": args.embed_wt}
 
     # define optimizer
-    optimizer = keras.optimizers.SGD(lr=args.lr, momentum=args.momentum)
+    optimizer = keras.optimizers.Nadam(lr=args.lr)
 
     model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer, metrics=['accuracy'])
 
@@ -79,11 +79,11 @@ def trainer(args):
     # model loggers
     csv_logger = CSVLogger('_'.join([args.model_name, args.dataset, '.csv']))
     reduce_lr = ReduceLROnPlateau(monitor=args.monitor, factor=args.factor, patience=args.patience)
-    early_stopping = EarlyStopping(min_delta=1e-3, patience=10)
+    early_stopping = EarlyStopping(min_delta=1e-3, patience=15)
     # create folder to save model checkpoints if not already exists
-    Path(os.path.join(args.weights_loc + args.model_name)).mkdir(parents=True, exist_ok=True)
+    Path(args.weights_loc + '_' + args.model_name).mkdir(parents=True, exist_ok=True)
     # model_checkpoint = CustomModelCheckpoint(model, os.path.join(args.weights_loc + args.model_name, 'epoch_'))
-    model_checkpoint = ModelCheckpoint(filepath=os.path.join(args.weights_loc, args.model_name + '.hdf5'),
+    model_checkpoint = ModelCheckpoint(filepath=os.path.join(args.weights_loc + '_' + args.model_name, 'best.hdf5'),
                                        save_best_only=True,
                                        monitor='val_action_output_accuracy',
                                        mode='max')

@@ -26,8 +26,8 @@ paths:
 # Training/Testing Parameters
 action_wt : 0.9
 embed_wt : 0.1
-lr : 0.01
+lr : 0.001
 momentum : 0.01
 batch_size : 4
-weights_loc: './weights_'
+weights_loc: './weights'
 
