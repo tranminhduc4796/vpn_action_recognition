@@ -5,7 +5,6 @@ import numpy as np
 def compute_adjacency(dataset_name, alpha, beta):
     adj = np.zeros([25, 25])
     if dataset_name == 'NTU':
-        # adj = np.ones([25, 25])
         intrinsic_connections = [[1, 2], [1, 17], [1, 13], [2, 21], [17, 18], [13, 14], [18, 19], [19, 20], [14, 15],
                                  [15, 16],
                                  [21, 5], [21, 9], [21, 3], [3, 4], [9, 10], [5, 6], [6, 7], [10, 11], [11, 12],

@@ -1,11 +1,11 @@
 import os
 
 from keras import regularizers
-from i3d_inception import Inception_Inflated3d, conv3d_bn
+from .i3d_inception import Inception_Inflated3d, conv3d_bn
 from keras.layers import Dense, Flatten, Dropout, Reshape, Input, RepeatVector, Permute
 from keras.layers import AveragePooling3D, Lambda
 from keras import backend as K
-from keras_dgl.layers import MultiGraphCNN
+from .keras_dgl.layers import MultiGraphCNN
 from keras.models import Model
 import keras
 from keras.layers.normalization import BatchNormalization
