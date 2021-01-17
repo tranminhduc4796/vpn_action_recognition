@@ -1,11 +1,11 @@
 import os
 
 from keras import regularizers
-from .i3d_inception import Inception_Inflated3d, conv3d_bn
+from i3d_inception import Inception_Inflated3d, conv3d_bn
 from keras.layers import Dense, Flatten, Dropout, Reshape, Input, RepeatVector, Permute
 from keras.layers import AveragePooling3D, Lambda
 from keras import backend as K
-from .keras_dgl.layers import MultiGraphCNN
+from keras_dgl.layers import MultiGraphCNN
 from keras.models import Model
 import keras
 from keras.layers.normalization import BatchNormalization
@@ -34,8 +34,8 @@ def attention_reg(weight_mat):
     return 0.00001 * K.square((1 - K.sum(weight_mat)))
 
 
-def l2_distance(A, B):
-    return K.sum(K.square(A - B), axis=1, keepdims=True)
+def l2_distance(x, y):
+    return K.sum(K.square(x - y), axis=1, keepdims=True)
 
 
 class i3d_modified:
@@ -211,15 +211,18 @@ def embed_model_spatio_temporal_gcnn(n_neuron, timesteps, num_nodes, num_feature
     z1 = Dense(256, activation='tanh', name='z1_layer', trainable=True)(model_gcnn.get_layer('gcnn_out').output)
     z2 = Dense(128, activation='tanh', name='z2_layer', trainable=True)(model_gcnn.get_layer('gcnn_out').output)
 
-    fc_main_spatial = Dense(49, activity_regularizer=attention_reg, kernel_initializer='zeros',
+    fc_main_spatial = Dense(49, activity_regularizer=attention_reg,
+                            kernel_initializer=keras.initializers.GlorotNormal(),
                             bias_initializer='zeros',
                             activation='sigmoid', trainable=True, name='dense_spatial')(z1)
-    fc_main_temporal = Dense(2, activity_regularizer=attention_reg, kernel_initializer='zeros',
+    fc_main_temporal = Dense(2, activity_regularizer=attention_reg,
+                             kernel_initializer=keras.initializers.GlorotNormal(),
                              bias_initializer='zeros',
                              activation='softmax', trainable=True, name='dense_temporal')(z2)
-    atten_mask_spatial = keras.layers.core.Lambda(inflate_dense_spatial, output_shape=(2, 7, 7, 1024))(fc_main_spatial)
-    atten_mask_temporal = keras.layers.core.Lambda(inflate_dense_temporal, output_shape=(2, 7, 7, 1024))(
-        fc_main_temporal)
+    atten_mask_spatial = keras.layers.core.Lambda(inflate_dense_spatial,
+                                                  output_shape=(2, 7, 7, 1024))(fc_main_spatial)
+    atten_mask_temporal = keras.layers.core.Lambda(inflate_dense_temporal,
+                                                   output_shape=(2, 7, 7, 1024))(fc_main_temporal)
     atten_mask = keras.layers.Multiply()([atten_mask_spatial, atten_mask_temporal])
 
     for layer in model_branch.layers:
@@ -233,8 +236,16 @@ def embed_model_spatio_temporal_gcnn(n_neuron, timesteps, num_nodes, num_feature
     model_inputs.append(model_branch.input)
 
     flatten_video = Flatten(name='flatten_video')(model_branch.get_layer('Mixed_5c').output)
-    embed_video = Dense(256, activation='sigmoid', trainable=True, name='dense_video')(flatten_video)
-    embed_skeleton = Dense(256, activation='sigmoid', trainable=True, name='dense_skeleton')(fc_main_spatial)
+    embed_video = Dense(256,
+                        activation='sigmoid',
+                        trainable=True,
+                        kernel_constraint=keras.constraints.UnitNorm(axis=0),
+                        name='dense_video')(flatten_video)
+    embed_skeleton = Dense(256,
+                           activation='sigmoid',
+                           trainable=True,
+                           kernel_constraint=keras.constraints.UnitNorm(axis=0),
+                           name='dense_skeleton')(fc_main_spatial)
 
     embed_output = Lambda(lambda x: l2_distance(x[0], x[1]), output_shape=lambda inp_shp: (inp_shp[0][0], 1),
                           name='embed_output')([embed_video, embed_skeleton])
