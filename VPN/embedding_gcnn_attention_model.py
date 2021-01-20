@@ -10,6 +10,7 @@ from keras.models import Model
 import keras
 from keras.layers.normalization import BatchNormalization
 from keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.utils import normalize
 
 
 os.environ['KERAS_BACKEND'] = 'tensorflow'
@@ -34,9 +35,8 @@ def attention_reg(weight_mat):
     return 0.00001 * K.square((1 - K.sum(weight_mat)))
 
 
-def l2_distance(x, y):
-    return K.sum(K.square(x - y), axis=1, keepdims=True)
-
+def embedding_loss(x, y):
+    return normalize(x / normalize(x) - y / normalize(y))
 
 class i3d_modified:
     def __init__(self, weights='rgb_imagenet_and_kinetics'):
@@ -247,7 +247,7 @@ def embed_model_spatio_temporal_gcnn(n_neuron, timesteps, num_nodes, num_feature
                            kernel_constraint=keras.constraints.UnitNorm(axis=0),
                            name='dense_skeleton')(fc_main_spatial)
 
-    embed_output = Lambda(lambda x: l2_distance(x[0], x[1]), output_shape=lambda inp_shp: (inp_shp[0][0], 1),
+    embed_output = Lambda(lambda x: embedding_loss(x[0], x[1]), output_shape=lambda inp_shp: (inp_shp[0][0], 1),
                           name='embed_output')([embed_video, embed_skeleton])
 
     multiplied_features = keras.layers.Multiply()([atten_mask, model_branch.get_layer('Mixed_5c').output])

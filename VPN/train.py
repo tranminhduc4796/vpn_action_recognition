@@ -65,7 +65,7 @@ def trainer(args):
     loss_weights = {"action_output": args.action_wt, "embed_output": args.embed_wt}
 
     # define optimizer
-    optimizer = keras.optimizers.Nadam(lr=args.lr)
+    optimizer = keras.optimizers.Adam(lr=args.lr)
 
     model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer, metrics=['accuracy'])
 
